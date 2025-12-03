@@ -1,18 +1,21 @@
 import path from 'path';
-import { SNAPSHOT_FILE } from './constants';
-import { fingerprintSpec } from './config';
-import { EnvironmentSpec, Snapshot } from './types';
-import { ensureStateDirectories, writeJson } from './state';
-import { StructuredLogger } from './logger';
+import { SNAPSHOT_FILE } from './constants.js';
+import { fingerprintSpec } from './config.js';
+import { EnvironmentSpec, Snapshot } from './types.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import { getEnvkitLogger } from './logger.js';
 
 export interface SnapshotOptions {
   cwd?: string;
 }
 
-export async function createSnapshot(spec: EnvironmentSpec, options: SnapshotOptions = {}): Promise<Snapshot> {
+export async function createSnapshot(
+  spec: EnvironmentSpec,
+  options: SnapshotOptions = {}
+): Promise<Snapshot> {
   const cwd = options.cwd ?? process.cwd();
   await ensureStateDirectories(cwd);
-  const logger = new StructuredLogger(cwd);
+  const logger = getEnvkitLogger({ component: 'snapshot', environment: spec.name });
 
   const snapshot: Snapshot = {
     spec,
@@ -22,6 +25,6 @@ export async function createSnapshot(spec: EnvironmentSpec, options: SnapshotOpt
 
   const snapshotPath = path.join(cwd, SNAPSHOT_FILE);
   await writeJson(snapshotPath, snapshot);
-  await logger.log('info', 'Snapshot created', { fingerprint: snapshot.fingerprint });
+  logger.info('Snapshot created', { fingerprint: snapshot.fingerprint });
   return snapshot;
 }

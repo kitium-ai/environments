@@ -1,5 +1,5 @@
-import { EnvironmentSpec, SecretProvider } from './types';
-import { StructuredLogger } from './logger';
+import { EnvironmentSpec, SecretProvider } from './types.js';
+import { getEnvkitLogger } from './logger.js';
 
 export interface SecretsOptions {
   cwd?: string;
@@ -7,11 +7,15 @@ export interface SecretsOptions {
 
 export class SecretsBroker {
   private readonly providers: SecretProvider[];
-  private readonly logger: StructuredLogger;
+  private readonly logger: ReturnType<typeof getEnvkitLogger>;
 
   constructor(spec: EnvironmentSpec, options: SecretsOptions = {}) {
     this.providers = spec.secrets ?? [];
-    this.logger = new StructuredLogger(options.cwd ?? process.cwd());
+    this.logger = getEnvkitLogger({
+      component: 'secrets',
+      environment: spec.name,
+      cwd: options.cwd ?? process.cwd(),
+    });
   }
 
   async fetchAll(): Promise<Record<string, string>> {
@@ -19,7 +23,7 @@ export class SecretsBroker {
     for (const provider of this.providers) {
       const key = `${provider.provider}:${provider.path}`;
       results[key] = `placeholder-secret-for-${key}`;
-      await this.logger.log('info', 'Secret fetched', { provider: provider.provider, path: provider.path });
+      this.logger.info('Secret fetched', { provider: provider.provider, path: provider.path });
     }
     return results;
   }

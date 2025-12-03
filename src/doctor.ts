@@ -1,10 +1,10 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
-import { DOCTOR_REPORT_FILE } from './constants';
-import { ensureStateDirectories, writeJson } from './state';
-import { DoctorCheckResult, DoctorReport, EnvironmentSpec } from './types';
-import { StructuredLogger } from './logger';
+import { DOCTOR_REPORT_FILE } from './constants.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import { DoctorCheckResult, DoctorReport, EnvironmentSpec } from './types.js';
+import { getEnvkitLogger } from './logger.js';
 
 const execAsync = promisify(exec);
 
@@ -12,9 +12,12 @@ export interface DoctorOptions {
   cwd?: string;
 }
 
-export async function runDoctor(spec: EnvironmentSpec, options: DoctorOptions = {}): Promise<DoctorReport> {
+export async function runDoctor(
+  spec: EnvironmentSpec,
+  options: DoctorOptions = {}
+): Promise<DoctorReport> {
   const cwd = options.cwd ?? process.cwd();
-  const logger = new StructuredLogger(cwd);
+  const logger = getEnvkitLogger({ component: 'doctor', environment: spec.name });
   await ensureStateDirectories(cwd);
 
   const results: DoctorCheckResult[] = [];
@@ -56,6 +59,6 @@ export async function runDoctor(spec: EnvironmentSpec, options: DoctorOptions = 
 
   const reportPath = path.join(cwd, DOCTOR_REPORT_FILE);
   await writeJson(reportPath, report);
-  await logger.log('info', 'Doctor checks completed', { passed, failed: report.summary.failed });
+  logger.info('Doctor checks completed', { passed, failed: report.summary.failed });
   return report;
 }

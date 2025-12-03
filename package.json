@@ -1,37 +1,105 @@
 {
-  "name": "envkit",
-  "version": "0.2.0",
+  "name": "@kitiumai/envkit",
+  "version": "1.0.0",
   "description": "Enterprise-grade environment toolkit with CLI and TypeScript APIs",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
     "envkit": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build"
+    "test": "vitest run",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:all": "node --input-type=module -e \"import { lintAll } from '@kitiumai/scripts/lint'; await lintAll(false);\"",
+    "test:watch": "vitest watch",
+    "test:coverage": "node --input-type=module -e \"import { runTestsCoverage } from '@kitiumai/scripts/test'; await runTestsCoverage();\"",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "security:audit": "node --input-type=module -e \"import { auditDependencies } from '@kitiumai/scripts/security'; const summary = await auditDependencies({ severityThreshold: 'moderate' }); if ((summary.severityCounts?.critical || 0) + (summary.severityCounts?.high || 0) + (summary.severityCounts?.moderate || 0) > 0) { console.log(JSON.stringify(summary, null, 2)); process.exit(1); } console.log('No blocking vulnerabilities');\"",
+    "security:secrets": "node --input-type=module -e \"import { scanSecrets } from '@kitiumai/scripts/security'; const result = await scanSecrets({ configPath: '.gitleaks.toml', failOnFinding: true }); if (result.findings?.length) { console.error(JSON.stringify(result.findings, null, 2)); process.exit(1); } console.log('No secrets detected');\"",
+    "ci:verify": "pnpm run lint:all && pnpm run test:coverage && pnpm run typecheck",
+    "changeset": "ensure-changeset && changeset",
+    "version": "ensure-changeset && changeset version",
+    "publish:set-token": "set-npm-token",
+    "publish:setup": "set-npm-token",
+    "publish:check": "npm whoami --registry https://registry.npmjs.org || npm login --registry https://registry.npmjs.org",
+    "publish:login": "npm login --registry https://registry.npmjs.org",
+    "publish:package": "pnpm run publish:check && pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org",
+    "publish:package:token": "pnpm run publish:setup && pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org",
+    "publish:package:otp": "pnpm run publish:check && pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org --otp",
+    "publish:dry-run": "pnpm publish --access public --no-git-checks --dry-run --registry https://registry.npmjs.org",
+    "publish:dry-run:token": "pnpm run publish:setup && pnpm publish --access public --no-git-checks --dry-run --registry https://registry.npmjs.org",
+    "release": "pnpm version && pnpm install --lockfile-only"
   },
   "files": [
-    "dist",
-    "envkit.yaml"
+    "dist/**/*",
+    "envkit.yaml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "environment",
     "cli",
     "devx",
-    "tooling"
+    "tooling",
+    "platform-engineering",
+    "secrets",
+    "provisioning",
+    "policy-as-code",
+    "observability",
+    "compliance",
+    "configuration",
+    "infrastructure",
+    "multi-environment",
+    "kitium",
+    "kitiumai"
   ],
-  "author": "",
+  "author": "Kitium AI",
   "license": "MIT",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "commander": "^11.1.0",
-    "yaml": "^2.4.2"
+    "yaml": "^2.4.2",
+    "@kitiumai/logger": "^2.0.1",
+    "@kitiumai/types": "^2.0.1",
+    "@kitiumai/error": "^2.0.1",
+    "@kitiumai/utils-ts": "^2.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@kitiumai/vitest-helpers": "^2.0.1",
+    "@kitiumai/lint": "^2.0.1",
+    "@kitiumai/scripts": "^1.0.0",
+    "@kitiumai/config": "^2.0.1",
+    "vitest": "^2.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitium-ai/environments.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kitium-ai/environments/issues"
+  },
+  "homepage": "https://github.com/kitium-ai/environments#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

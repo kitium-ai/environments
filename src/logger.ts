@@ -1,26 +1,55 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { LOG_FILE } from './constants';
-import { ensureStateDirectories } from './state';
+import { getLogger, LogLevel } from '@kitiumai/logger';
+import { KitiumError } from '@kitiumai/error';
 
-export type LogLevel = 'info' | 'warn' | 'error';
+export { LogLevel };
 
-export class StructuredLogger {
-  constructor(private readonly baseDir = process.cwd()) {}
+/**
+ * Get a logger instance for envkit operations
+ */
+export function getEnvkitLogger(context?: Record<string, unknown>) {
+  const logger = getLogger();
+  const prefix = '[envkit]';
 
-  async log(level: LogLevel, message: string, details: Record<string, unknown> = {}): Promise<void> {
-    await ensureStateDirectories(this.baseDir);
-    const timestamp = new Date().toISOString();
-    const entry = { level, message, timestamp, ...details };
-    const logLine = `${JSON.stringify(entry)}\n`;
-    const fullPath = path.join(this.baseDir, LOG_FILE);
-    await fs.appendFile(fullPath, logLine, 'utf-8');
-    if (level === 'error') {
-      console.error(`[envkit] ${message}`);
-    } else if (level === 'warn') {
-      console.warn(`[envkit] ${message}`);
-    } else {
-      console.log(`[envkit] ${message}`);
-    }
+  return {
+    info: (message: string, metadata?: Record<string, unknown>) => {
+      logger.info(`${prefix} ${message}`, { ...context, ...metadata });
+    },
+    warn: (message: string, metadata?: Record<string, unknown>) => {
+      logger.warn(`${prefix} ${message}`, { ...context, ...metadata });
+    },
+    error: (message: string, err?: Error | KitiumError, metadata?: Record<string, unknown>) => {
+      if (err) {
+        logger.error(`${prefix} ${message}`, { ...context, ...metadata }, err);
+      } else {
+        logger.error(`${prefix} ${message}`, { ...context, ...metadata });
+      }
+    },
+    debug: (message: string, metadata?: Record<string, unknown>) => {
+      logger.debug(`${prefix} ${message}`, { ...context, ...metadata });
+    },
+  };
+}
+
+/**
+ * Create an error for envkit operations
+ */
+export function createEnvkitError(
+  code: string,
+  message: string,
+  options?: {
+    cause?: Error;
+    context?: Record<string, unknown>;
+    retryable?: boolean;
   }
+): KitiumError {
+  return new KitiumError({
+    code: `envkit/${code}`,
+    message,
+    severity: 'error',
+    kind: 'internal',
+    retryable: options?.retryable ?? false,
+    source: '@kitiumai/envkit',
+    cause: options?.cause,
+    context: options?.context,
+  });
 }

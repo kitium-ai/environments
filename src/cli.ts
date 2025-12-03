@@ -2,14 +2,14 @@
 import { Command } from 'commander';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { loadSpec } from './config';
-import { runDoctor } from './doctor';
-import { provisionEnvironment } from './provision';
-import { createSnapshot } from './snapshot';
-import { SecretsBroker } from './secrets';
-import { ensureStateDirectories } from './state';
-import { StructuredLogger } from './logger';
-import { STATE_DIR } from './constants';
+import { loadSpec } from './config.js';
+import { runDoctor } from './doctor.js';
+import { provisionEnvironment } from './provision.js';
+import { createSnapshot } from './snapshot.js';
+import { SecretsBroker } from './secrets.js';
+import { ensureStateDirectories } from './state.js';
+import { getEnvkitLogger } from './logger.js';
+import { STATE_DIR } from './constants.js';
 
 const DEFAULT_SPEC = 'envkit.yaml';
 const SAMPLE_SPEC_CONTENT = `name: sample-service
@@ -49,8 +49,8 @@ export async function main(): Promise<void> {
       const specPath = path.join(cwd, program.opts().path);
       await ensureStateDirectories(cwd);
       await writeSampleSpec(specPath);
-      const logger = new StructuredLogger(cwd);
-      await logger.log('info', `Initialized spec at ${specPath}`);
+      const logger = getEnvkitLogger({ component: 'cli', command: 'init' });
+      logger.info(`Initialized spec at ${specPath}`);
     });
 
   program
@@ -93,8 +93,8 @@ export async function main(): Promise<void> {
           await fs.rm(path.join(target, entry), { recursive: true, force: true });
         }
       }
-      const logger = new StructuredLogger(cwd);
-      await logger.log('warn', 'Destroyed envkit state', { preserveLogs: commandOptions.preserveLogs });
+      const logger = getEnvkitLogger({ component: 'cli', command: 'destroy' });
+      logger.warn('Destroyed envkit state', { preserveLogs: commandOptions.preserveLogs });
     });
 
   program
@@ -112,7 +112,9 @@ export async function main(): Promise<void> {
     .command('plugins')
     .description('Describe plugin capabilities (registry is runtime configurable)')
     .action(async () => {
-      console.log('Plugins can be registered via the PluginRegistry class inside your automation scripts.');
+      console.log(
+        'Plugins can be registered via the PluginRegistry class inside your automation scripts.'
+      );
     });
 
   await program.parseAsync(process.argv);

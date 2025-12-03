@@ -1,16 +1,19 @@
 import path from 'path';
-import { LAST_APPLIED_FILE } from './constants';
-import { EnvironmentSpec } from './types';
-import { ensureStateDirectories, writeJson } from './state';
-import { StructuredLogger } from './logger';
+import { LAST_APPLIED_FILE } from './constants.js';
+import { EnvironmentSpec } from './types.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import { getEnvkitLogger } from './logger.js';
 
 export interface ProvisionOptions {
   cwd?: string;
 }
 
-export async function provisionEnvironment(spec: EnvironmentSpec, options: ProvisionOptions = {}): Promise<void> {
+export async function provisionEnvironment(
+  spec: EnvironmentSpec,
+  options: ProvisionOptions = {}
+): Promise<void> {
   const cwd = options.cwd ?? process.cwd();
-  const logger = new StructuredLogger(cwd);
+  const logger = getEnvkitLogger({ component: 'provision', environment: spec.name });
   await ensureStateDirectories(cwd);
 
   const state = {
@@ -22,5 +25,5 @@ export async function provisionEnvironment(spec: EnvironmentSpec, options: Provi
   };
   const lastAppliedPath = path.join(cwd, LAST_APPLIED_FILE);
   await writeJson(lastAppliedPath, state);
-  await logger.log('info', 'Environment provisioned', state);
+  logger.info('Environment provisioned', state);
 }
