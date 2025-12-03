@@ -1,0 +1,37 @@
+{
+  "name": "envkit",
+  "version": "0.2.0",
+  "description": "Enterprise-grade environment toolkit with CLI and TypeScript APIs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "envkit": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build"
+  },
+  "files": [
+    "dist",
+    "envkit.yaml"
+  ],
+  "keywords": [
+    "environment",
+    "cli",
+    "devx",
+    "tooling"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "yaml": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}
