@@ -11,8 +11,8 @@ Build an enterprise-ready environment setup and utilities package with simplifie
 - **Developer Experience**: single-command bootstrap, consistent CLI ergonomics, excellent documentation, templates for common stacks, and rich IDE integration.
 
 ## Current State (Assessment)
-- Repository now includes the envkit CLI, declarative spec, secrets broker, policy hooks, and deterministic snapshotting.
-- Documentation covers feature overview, API reference, and implementation status against enterprise recommendations.
+- Repository now ships a TypeScript-based envkit CLI with declarative spec parsing, secrets broker, policy hooks, and deterministic snapshotting.
+- Documentation covers feature overview, API reference, and implementation status against enterprise recommendations with TypeScript examples.
 - Changelog is initialized; CI, signed releases, SBOM, and deep testing are planned next.
 
 ## Recommended Improvements
@@ -60,9 +60,9 @@ Build an enterprise-ready environment setup and utilities package with simplifie
 - Draft the environment spec and CLI command contracts, then open RFCs for review.
 
 ## Recommendation Implementation Status
-- **Unified CLI and declarative spec**: Implemented via `envkit` commands (`init`, `doctor`, `provision`, `snapshot`, `destroy`) that operate on `envkit.yaml` and produce deterministic lockfiles.
-- **Secrets broker abstraction**: Implemented with `SecretsBroker` supporting multiple providers and rotation hooks.
-- **Policy and governance hooks**: Policies can be referenced in `envkit.yaml` and loaded during provisioning; plugin registry enables organization-specific controls.
+- **Unified CLI and declarative spec**: Implemented via TypeScript `envkit` commands (`init`, `doctor`, `provision`, `snapshot`, `destroy`) that operate on `envkit.yaml` and produce deterministic lockfiles.
+- **Secrets broker abstraction**: Implemented with `SecretsBroker` supporting provider metadata and rotation hints.
+- **Policy and governance hooks**: Policies can be referenced in `envkit.yaml`; plugin registry enables organization-specific controls.
 - **Reliability and observability**: Doctor command runs baseline + custom checks with structured diagnostics; provisioning/snapshotting emit audit logs under `.envkit/`.
-- **Developer experience**: Quick-start sample spec, CLI help text, and README API references provided; commands are single-invocation for setup and diagnostics.
+- **Developer experience**: Quick-start sample spec, TypeScript CLI help text, and README API references provided; commands are single-invocation for setup and diagnostics.
 - **Release hygiene**: Changelog initialized and ready for signed releases, SBOM, and vulnerability scanning to be wired into CI.

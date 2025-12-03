@@ -1,28 +1,16 @@
-{
-  "name": "sample-python-service",
-  "description": "Local + CI environment with reproducible toolchains and secrets",
-  "secrets": [
-    {
-      "provider": "vault",
-      "path": "kv/services/sample-python-service",
-      "rotation_days": 30
-    }
-  ],
-  "toolchains": [
-    {
-      "name": "python",
-      "version": "3.11"
-    },
-    {
-      "name": "node",
-      "version": "20"
-    }
-  ],
-  "policies": [
-    "policies/baseline.rego"
-  ],
-  "checks": [
-    "python --version",
-    "node --version"
-  ]
-}
+name: sample-service
+description: Local + CI environment with reproducible toolchains and secrets
+secrets:
+  - provider: vault
+    path: kv/services/sample-service
+    rotationDays: 30
+toolchains:
+  - name: node
+    version: "20"
+  - name: python
+    version: "3.11"
+policies:
+  - policies/baseline.rego
+checks:
+  - node --version
+  - npm --version

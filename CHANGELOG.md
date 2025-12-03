@@ -2,6 +2,6 @@
 
 ## [Unreleased]
 ### Added
-- Introduced `envkit` CLI with commands for initialization, health checks, provisioning, snapshotting, and teardown.
-- Added declarative environment specification, secrets broker abstraction, policy loading, and deterministic lockfile generation.
-- Documented API usage and implementation status against enterprise recommendations.
+- Rebuilt envkit as a TypeScript package with CLI and typed APIs for environment provisioning, diagnostics, and snapshotting.
+- Included YAML-first spec parsing, secrets broker, plugin registry, and structured logging for reproducible environments.
+- Updated documentation with TypeScript usage examples, API references, and enterprise implementation status.
