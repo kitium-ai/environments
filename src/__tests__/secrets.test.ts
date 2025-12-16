@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { SecretsBroker } from '../secrets.js';
-import { EnvironmentSpec } from '../types.js';
+import type { EnvironmentSpec } from '../types.js';
 
 describe('secrets', () => {
   describe('SecretsBroker', () => {
-    it('should fetch all configured secrets', async () => {
+    it('should fetch all configured secrets', () => {
       const spec: EnvironmentSpec = {
         name: 'test-env',
         secrets: [
@@ -14,37 +15,37 @@ describe('secrets', () => {
       };
 
       const broker = new SecretsBroker(spec);
-      const secrets = await broker.fetchAll();
+      const secrets = broker.fetchAll();
 
       expect(Object.keys(secrets)).toHaveLength(2);
       expect(secrets['vault:kv/prod/db']).toBe('placeholder-secret-for-vault:kv/prod/db');
       expect(secrets['aws:secrets/api-key']).toBe('placeholder-secret-for-aws:secrets/api-key');
     });
 
-    it('should handle spec with no secrets', async () => {
+    it('should handle spec with no secrets', () => {
       const spec: EnvironmentSpec = {
         name: 'test-env',
       };
 
       const broker = new SecretsBroker(spec);
-      const secrets = await broker.fetchAll();
+      const secrets = broker.fetchAll();
 
       expect(Object.keys(secrets)).toHaveLength(0);
     });
 
-    it('should handle secrets with rotation days', async () => {
+    it('should handle secrets with rotation days', () => {
       const spec: EnvironmentSpec = {
         name: 'test-env',
         secrets: [{ provider: 'vault', path: 'kv/test', rotationDays: 30 }],
       };
 
       const broker = new SecretsBroker(spec);
-      const secrets = await broker.fetchAll();
+      const secrets = broker.fetchAll();
 
       expect(secrets['vault:kv/test']).toBeDefined();
     });
 
-    it('should generate unique keys for each secret', async () => {
+    it('should generate unique keys for each secret', () => {
       const spec: EnvironmentSpec = {
         name: 'test-env',
         secrets: [
@@ -54,13 +55,13 @@ describe('secrets', () => {
       };
 
       const broker = new SecretsBroker(spec);
-      const secrets = await broker.fetchAll();
+      const secrets = broker.fetchAll();
 
       expect(Object.keys(secrets)).toHaveLength(2);
       expect(secrets['vault:kv/prod']).not.toBe(secrets['vault:kv/staging']);
     });
 
-    it('should accept custom cwd option', async () => {
+    it('should accept custom cwd option', () => {
       const spec: EnvironmentSpec = {
         name: 'test-env',
         secrets: [{ provider: 'test', path: 'path' }],
@@ -68,7 +69,7 @@ describe('secrets', () => {
 
       const customCwd = '/custom/path';
       const broker = new SecretsBroker(spec, { cwd: customCwd });
-      const secrets = await broker.fetchAll();
+      const secrets = broker.fetchAll();
 
       expect(secrets['test:path']).toBeDefined();
     });

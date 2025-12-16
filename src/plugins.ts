@@ -1,12 +1,10 @@
-import { PluginHook } from './types.js';
+import type { PluginHook } from './types.js';
 
 export class PluginRegistry {
   private readonly hooks: Record<string, PluginHook[]> = {};
 
   register(event: string, hook: PluginHook): void {
-    if (!this.hooks[event]) {
-      this.hooks[event] = [];
-    }
+    this.hooks[event] ??= [];
     this.hooks[event].push(hook);
   }
 

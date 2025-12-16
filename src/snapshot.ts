@@ -1,11 +1,12 @@
-import path from 'path';
-import { SNAPSHOT_FILE } from './constants.js';
-import { fingerprintSpec } from './config.js';
-import { EnvironmentSpec, Snapshot } from './types.js';
-import { ensureStateDirectories, writeJson } from './state.js';
-import { getEnvkitLogger } from './logger.js';
+import path from 'node:path';
 
-export interface SnapshotOptions {
+import { fingerprintSpec } from './config.js';
+import { SNAPSHOT_FILE } from './constants.js';
+import { getEnvkitLogger } from './logger.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import type { EnvironmentSpec, Snapshot } from './types.js';
+
+export type SnapshotOptions = {
   cwd?: string;
 }
 

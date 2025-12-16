@@ -22,7 +22,7 @@
     "test": "vitest run",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint:fix": "eslint \"src\" --ext .ts,.tsx --fix",
     "lint:all": "node --input-type=module -e \"import { lintAll } from '@kitiumai/scripts/lint'; await lintAll(false);\"",
     "test:watch": "vitest watch",
     "test:coverage": "node --input-type=module -e \"import { runTestsCoverage } from '@kitiumai/scripts/test'; await runTestsCoverage();\"",
@@ -74,21 +74,23 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@kitiumai/error": "^3.0.0",
+    "@kitiumai/logger": "^3.0.1",
+    "@kitiumai/types": "^3.0.0",
+    "@kitiumai/utils-ts": "^3.0.0",
     "commander": "^11.1.0",
-    "yaml": "^2.4.2",
-    "@kitiumai/logger": "^2.0.1",
-    "@kitiumai/types": "^2.0.1",
-    "@kitiumai/error": "^2.0.1",
-    "@kitiumai/utils-ts": "^2.0.2"
+    "yaml": "^2.4.2"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
-    "typescript": "^5.4.5",
-    "@kitiumai/vitest-helpers": "^2.0.1",
-    "@kitiumai/lint": "^2.0.1",
-    "@kitiumai/scripts": "^1.0.0",
-    "@kitiumai/config": "^2.0.1",
-    "vitest": "^2.1.9"
+    "@kitiumai/config": "^3.1.4",
+    "@kitiumai/lint": "^3.0.1",
+    "@kitiumai/scripts": "^2.0.0",
+    "@kitiumai/vitest-helpers": "^3.0.0",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.15.0",
+    "husky": "^9.1.7",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.8"
   },
   "repository": {
     "type": "git",

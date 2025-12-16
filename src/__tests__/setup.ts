@@ -1,7 +1,6 @@
-import { initializeLogger, getPresetConfig } from '@kitiumai/logger';
+import { getPresetConfig, initializeLogger } from '@kitiumai/logger';
 import { beforeAll } from 'vitest';
 
-// Initialize logger before all tests
 beforeAll(() => {
   const config = getPresetConfig('development', {
     loki: {

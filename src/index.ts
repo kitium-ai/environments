@@ -1,5 +1,6 @@
 export * from './cli.js';
 export * from './config.js';
+export * from './constants.js';
 export * from './doctor.js';
 export * from './logger.js';
 export * from './plugins.js';
@@ -8,4 +9,3 @@ export * from './secrets.js';
 export * from './snapshot.js';
 export * from './state.js';
 export * from './types.js';
-export * from './constants.js';

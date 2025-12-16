@@ -1,18 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { createSnapshot } from '../snapshot.js';
-import { EnvironmentSpec } from '../types.js';
+import { pathExists } from '../state.js';
+import type { EnvironmentSpec } from '../types.js';
 
 describe('snapshot', () => {
-  const testDir = path.join(process.cwd(), '.test-envkit-snapshot');
+  const testDirectory = path.join(process.cwd(), '.test-envkit-snapshot');
 
   beforeEach(async () => {
-    await fs.mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDirectory, { recursive: true });
   });
 
   afterEach(async () => {
-    await fs.rm(testDir, { recursive: true, force: true });
+    await fs.rm(testDirectory, { recursive: true, force: true });
   });
 
   describe('createSnapshot', () => {
@@ -22,7 +25,7 @@ describe('snapshot', () => {
         toolchains: [{ name: 'node', version: '20' }],
       };
 
-      const snapshot = await createSnapshot(spec, { cwd: testDir });
+      const snapshot = await createSnapshot(spec, { cwd: testDirectory });
 
       expect(snapshot.spec).toEqual(spec);
       expect(snapshot.fingerprint).toBeDefined();
@@ -35,14 +38,11 @@ describe('snapshot', () => {
         name: 'test-env',
       };
 
-      await createSnapshot(spec, { cwd: testDir });
+      await createSnapshot(spec, { cwd: testDirectory });
 
-      const snapshotPath = path.join(testDir, '.envkit', 'envkit.lock.json');
-      const exists = await fs
-        .access(snapshotPath)
-        .then(() => true)
-        .catch(() => false);
-      expect(exists).toBe(true);
+      const snapshotPath = path.join(testDirectory, '.envkit', 'envkit.lock.json');
+      const isSnapshotPresent = await pathExists(snapshotPath);
+      expect(isSnapshotPresent).toBe(true);
 
       const content = await fs.readFile(snapshotPath, 'utf-8');
       const snapshot = JSON.parse(content);
@@ -55,7 +55,7 @@ describe('snapshot', () => {
       };
 
       const before = new Date().getTime();
-      const snapshot = await createSnapshot(spec, { cwd: testDir });
+      const snapshot = await createSnapshot(spec, { cwd: testDirectory });
       const after = new Date().getTime();
 
       const createdAt = new Date(snapshot.createdAt).getTime();
@@ -69,7 +69,7 @@ describe('snapshot', () => {
         toolchains: [{ name: 'node', version: '20' }],
       };
 
-      const snapshot1 = await createSnapshot(spec, { cwd: testDir });
+      const snapshot1 = await createSnapshot(spec, { cwd: testDirectory });
 
       // Create in a different directory to avoid file conflicts
       const testDir2 = path.join(process.cwd(), '.test-envkit-snapshot2');
@@ -93,7 +93,7 @@ describe('snapshot', () => {
         checks: ['node --version', 'python --version'],
       };
 
-      const snapshot = await createSnapshot(spec, { cwd: testDir });
+      const snapshot = await createSnapshot(spec, { cwd: testDirectory });
 
       expect(snapshot.spec).toEqual(spec);
       expect(snapshot.spec.toolchains).toHaveLength(2);
@@ -107,14 +107,11 @@ describe('snapshot', () => {
         name: 'test-env',
       };
 
-      await createSnapshot(spec, { cwd: testDir });
+      await createSnapshot(spec, { cwd: testDirectory });
 
-      const stateDir = path.join(testDir, '.envkit');
-      const exists = await fs
-        .access(stateDir)
-        .then(() => true)
-        .catch(() => false);
-      expect(exists).toBe(true);
+      const stateDir = path.join(testDirectory, '.envkit');
+      const isStateDirectoryPresent = await pathExists(stateDir);
+      expect(isStateDirectoryPresent).toBe(true);
     });
   });
 });

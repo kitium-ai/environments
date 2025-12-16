@@ -1,16 +1,16 @@
-export interface SecretProvider {
+export type SecretProvider = {
   provider: string;
   path: string;
   rotationDays?: number;
 }
 
-export interface Toolchain {
+export type Toolchain = {
   name: string;
   version: string;
   cacheKey?: string;
 }
 
-export interface EnvironmentSpec {
+export type EnvironmentSpec = {
   name: string;
   description?: string;
   secrets?: SecretProvider[];
@@ -19,7 +19,7 @@ export interface EnvironmentSpec {
   checks?: string[];
 }
 
-export interface DoctorCheckResult {
+export type DoctorCheckResult = {
   command: string;
   success: boolean;
   stdout: string;
@@ -27,7 +27,7 @@ export interface DoctorCheckResult {
   durationMs: number;
 }
 
-export interface DoctorReport {
+export type DoctorReport = {
   summary: {
     total: number;
     passed: number;
@@ -37,7 +37,7 @@ export interface DoctorReport {
   results: DoctorCheckResult[];
 }
 
-export interface Snapshot {
+export type Snapshot = {
   spec: EnvironmentSpec;
   fingerprint: string;
   createdAt: string;

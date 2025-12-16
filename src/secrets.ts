@@ -1,9 +1,9 @@
-import { EnvironmentSpec, SecretProvider } from './types.js';
 import { getEnvkitLogger } from './logger.js';
+import type { EnvironmentSpec, SecretProvider } from './types.js';
 
-export interface SecretsOptions {
+export type SecretsOptions = {
   cwd?: string;
-}
+};
 
 export class SecretsBroker {
   private readonly providers: SecretProvider[];
@@ -18,7 +18,7 @@ export class SecretsBroker {
     });
   }
 
-  async fetchAll(): Promise<Record<string, string>> {
+  fetchAll(): Record<string, string> {
     const results: Record<string, string> = {};
     for (const provider of this.providers) {
       const key = `${provider.provider}:${provider.path}`;

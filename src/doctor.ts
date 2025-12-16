@@ -1,15 +1,45 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
+import { exec } from 'node:child_process';
+import path from 'node:path';
+import { promisify } from 'node:util';
+
+import { timeout } from '@kitiumai/utils-ts';
+
 import { DOCTOR_REPORT_FILE } from './constants.js';
-import { ensureStateDirectories, writeJson } from './state.js';
-import { DoctorCheckResult, DoctorReport, EnvironmentSpec } from './types.js';
 import { getEnvkitLogger } from './logger.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import type { DoctorCheckResult, DoctorReport, EnvironmentSpec } from './types.js';
 
 const execAsync = promisify(exec);
 
-export interface DoctorOptions {
+export type DoctorOptions = {
   cwd?: string;
+}
+
+async function executeDoctorCheck(command: string, cwd: string): Promise<DoctorCheckResult> {
+  const startedAt = Date.now();
+  try {
+    const { stdout, stderr } = await timeout(
+      execAsync(command, { cwd }),
+      15000,
+      `Command execution timed out: ${command}`
+    );
+    return {
+      command,
+      success: true,
+      stdout: stdout.trim(),
+      stderr: stderr.trim(),
+      durationMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    const execError = error as { stdout?: string; stderr?: string; message: string };
+    return {
+      command,
+      success: false,
+      stdout: (execError.stdout ?? '').toString().trim(),
+      stderr: (execError.stderr ?? execError.message ?? '').toString().trim(),
+      durationMs: Date.now() - startedAt,
+    };
+  }
 }
 
 export async function runDoctor(
@@ -23,26 +53,7 @@ export async function runDoctor(
   const results: DoctorCheckResult[] = [];
   if (spec.checks && spec.checks.length > 0) {
     for (const command of spec.checks) {
-      const started = Date.now();
-      try {
-        const { stdout, stderr } = await execAsync(command, { cwd, timeout: 15000 });
-        results.push({
-          command,
-          success: true,
-          stdout: stdout.trim(),
-          stderr: stderr.trim(),
-          durationMs: Date.now() - started,
-        });
-      } catch (error) {
-        const execError = error as { stdout?: string; stderr?: string; message: string };
-        results.push({
-          command,
-          success: false,
-          stdout: (execError.stdout ?? '').toString().trim(),
-          stderr: (execError.stderr ?? execError.message ?? '').toString().trim(),
-          durationMs: Date.now() - started,
-        });
-      }
+      results.push(await executeDoctorCheck(command, cwd));
     }
   }
 

@@ -1,18 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { provisionEnvironment } from '../provision.js';
-import { EnvironmentSpec } from '../types.js';
+import { pathExists } from '../state.js';
+import type { EnvironmentSpec } from '../types.js';
 
 describe('provision', () => {
-  const testDir = path.join(process.cwd(), '.test-envkit-provision');
+  const testDirectory = path.join(process.cwd(), '.test-envkit-provision');
 
   beforeEach(async () => {
-    await fs.mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDirectory, { recursive: true });
   });
 
   afterEach(async () => {
-    await fs.rm(testDir, { recursive: true, force: true });
+    await fs.rm(testDirectory, { recursive: true, force: true });
   });
 
   describe('provisionEnvironment', () => {
@@ -27,14 +30,11 @@ describe('provision', () => {
         policies: ['policy1.rego', 'policy2.rego'],
       };
 
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
 
-      const statePath = path.join(testDir, '.envkit', 'last-applied.json');
-      const exists = await fs
-        .access(statePath)
-        .then(() => true)
-        .catch(() => false);
-      expect(exists).toBe(true);
+      const statePath = path.join(testDirectory, '.envkit', 'last-applied.json');
+      const isStatePresent = await pathExists(statePath);
+      expect(isStatePresent).toBe(true);
 
       const content = await fs.readFile(statePath, 'utf-8');
       const state = JSON.parse(content);
@@ -51,9 +51,9 @@ describe('provision', () => {
         name: 'minimal-env',
       };
 
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
 
-      const statePath = path.join(testDir, '.envkit', 'last-applied.json');
+      const statePath = path.join(testDirectory, '.envkit', 'last-applied.json');
       const content = await fs.readFile(statePath, 'utf-8');
       const state = JSON.parse(content);
 
@@ -69,10 +69,10 @@ describe('provision', () => {
       };
 
       const before = new Date().getTime();
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
       const after = new Date().getTime();
 
-      const statePath = path.join(testDir, '.envkit', 'last-applied.json');
+      const statePath = path.join(testDirectory, '.envkit', 'last-applied.json');
       const content = await fs.readFile(statePath, 'utf-8');
       const state = JSON.parse(content);
 
@@ -86,22 +86,16 @@ describe('provision', () => {
         name: 'test-env',
       };
 
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
 
-      const stateDir = path.join(testDir, '.envkit');
-      const diagnosticsDir = path.join(testDir, '.envkit', 'diagnostics');
+      const stateDir = path.join(testDirectory, '.envkit');
+      const diagnosticsDir = path.join(testDirectory, '.envkit', 'diagnostics');
 
-      const stateDirExists = await fs
-        .access(stateDir)
-        .then(() => true)
-        .catch(() => false);
-      const diagnosticsDirExists = await fs
-        .access(diagnosticsDir)
-        .then(() => true)
-        .catch(() => false);
+      const isStateDirectoryPresent = await pathExists(stateDir);
+      const isDiagnosticsDirectoryPresent = await pathExists(diagnosticsDir);
 
-      expect(stateDirExists).toBe(true);
-      expect(diagnosticsDirExists).toBe(true);
+      expect(isStateDirectoryPresent).toBe(true);
+      expect(isDiagnosticsDirectoryPresent).toBe(true);
     });
 
     it('should preserve toolchain metadata', async () => {
@@ -110,9 +104,9 @@ describe('provision', () => {
         toolchains: [{ name: 'node', version: '20', cacheKey: 'custom-key' }],
       };
 
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
 
-      const statePath = path.join(testDir, '.envkit', 'last-applied.json');
+      const statePath = path.join(testDirectory, '.envkit', 'last-applied.json');
       const content = await fs.readFile(statePath, 'utf-8');
       const state = JSON.parse(content);
 
@@ -125,9 +119,9 @@ describe('provision', () => {
         secrets: [{ provider: 'vault', path: 'kv/test', rotationDays: 30 }],
       };
 
-      await provisionEnvironment(spec, { cwd: testDir });
+      await provisionEnvironment(spec, { cwd: testDirectory });
 
-      const statePath = path.join(testDir, '.envkit', 'last-applied.json');
+      const statePath = path.join(testDirectory, '.envkit', 'last-applied.json');
       const content = await fs.readFile(statePath, 'utf-8');
       const state = JSON.parse(content);
 

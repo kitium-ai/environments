@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { sleep } from '@kitiumai/utils-ts';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { PluginRegistry } from '../plugins.js';
 
 describe('plugins', () => {
+  const TEST_EVENT = 'test-event';
   let registry: PluginRegistry;
 
   beforeEach(() => {
@@ -10,36 +13,36 @@ describe('plugins', () => {
 
   describe('PluginRegistry', () => {
     it('should register a plugin hook', () => {
-      const hook = async () => {
-        /* no-op */
+      const hook = (): void => {
+        // no-op
       };
-      registry.register('test-event', hook);
+      registry.register(TEST_EVENT, hook);
 
       // No error means success
       expect(true).toBe(true);
     });
 
     it('should run registered hooks', async () => {
-      let called = false;
-      const hook = async () => {
-        called = true;
+      let isCalled = false;
+      const hook = (): void => {
+        isCalled = true;
       };
 
-      registry.register('test-event', hook);
-      await registry.run('test-event', {});
+      registry.register(TEST_EVENT, hook);
+      await registry.run(TEST_EVENT, {});
 
-      expect(called).toBe(true);
+      expect(isCalled).toBe(true);
     });
 
     it('should pass context to hooks', async () => {
       let receivedContext: Record<string, unknown> = {};
-      const hook = async (context: Record<string, unknown>) => {
-        receivedContext = context;
+      const hook = (hookContext: Record<string, unknown>): void => {
+        receivedContext = hookContext;
       };
 
       const context = { test: 'value', number: 123 };
-      registry.register('test-event', hook);
-      await registry.run('test-event', context);
+      registry.register(TEST_EVENT, hook);
+      await registry.run(TEST_EVENT, context);
 
       expect(receivedContext).toEqual(context);
     });
@@ -47,17 +50,17 @@ describe('plugins', () => {
     it('should run multiple hooks for same event', async () => {
       const calls: number[] = [];
 
-      registry.register('test-event', async () => {
+      registry.register(TEST_EVENT, () => {
         calls.push(1);
       });
-      registry.register('test-event', async () => {
+      registry.register(TEST_EVENT, () => {
         calls.push(2);
       });
-      registry.register('test-event', async () => {
+      registry.register(TEST_EVENT, () => {
         calls.push(3);
       });
 
-      await registry.run('test-event', {});
+      await registry.run(TEST_EVENT, {});
 
       expect(calls).toEqual([1, 2, 3]);
     });
@@ -65,28 +68,28 @@ describe('plugins', () => {
     it('should run hooks in order of registration', async () => {
       const order: string[] = [];
 
-      registry.register('test-event', async () => {
+      registry.register(TEST_EVENT, () => {
         order.push('first');
       });
-      registry.register('test-event', async () => {
+      registry.register(TEST_EVENT, () => {
         order.push('second');
       });
 
-      await registry.run('test-event', {});
+      await registry.run(TEST_EVENT, {});
 
       expect(order).toEqual(['first', 'second']);
     });
 
     it('should handle synchronous hooks', async () => {
-      let called = false;
+      let isCalled = false;
       const hook = () => {
-        called = true;
+        isCalled = true;
       };
 
-      registry.register('test-event', hook);
-      await registry.run('test-event', {});
+      registry.register(TEST_EVENT, hook);
+      await registry.run(TEST_EVENT, {});
 
-      expect(called).toBe(true);
+      expect(isCalled).toBe(true);
     });
 
     it('should handle events with no registered hooks', async () => {
@@ -98,10 +101,10 @@ describe('plugins', () => {
       const event1Called: boolean[] = [];
       const event2Called: boolean[] = [];
 
-      registry.register('event1', async () => {
+      registry.register('event1', () => {
         event1Called.push(true);
       });
-      registry.register('event2', async () => {
+      registry.register('event2', () => {
         event2Called.push(true);
       });
 
@@ -115,31 +118,31 @@ describe('plugins', () => {
     it('should allow hooks to modify context', async () => {
       const context: Record<string, unknown> = { count: 0 };
 
-      registry.register('test-event', async (ctx) => {
-        ctx.count = (ctx.count as number) + 1;
+      registry.register(TEST_EVENT, (hookContext) => {
+        hookContext['count'] = ((hookContext['count'] as number) ?? 0) + 1;
       });
-      registry.register('test-event', async (ctx) => {
-        ctx.count = (ctx.count as number) + 1;
+      registry.register(TEST_EVENT, (hookContext) => {
+        hookContext['count'] = ((hookContext['count'] as number) ?? 0) + 1;
       });
 
-      await registry.run('test-event', context);
+      await registry.run(TEST_EVENT, context);
 
-      expect(context.count).toBe(2);
+      expect(context['count']).toBe(2);
     });
 
     it('should handle async operations in hooks', async () => {
       const results: string[] = [];
 
-      registry.register('test-event', async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
+      registry.register(TEST_EVENT, async () => {
+        await sleep(10);
         results.push('async1');
       });
-      registry.register('test-event', async () => {
-        await new Promise((resolve) => setTimeout(resolve, 5));
+      registry.register(TEST_EVENT, async () => {
+        await sleep(5);
         results.push('async2');
       });
 
-      await registry.run('test-event', {});
+      await registry.run(TEST_EVENT, {});
 
       expect(results).toHaveLength(2);
       expect(results).toContain('async1');

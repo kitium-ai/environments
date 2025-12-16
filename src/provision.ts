@@ -1,10 +1,11 @@
-import path from 'path';
-import { LAST_APPLIED_FILE } from './constants.js';
-import { EnvironmentSpec } from './types.js';
-import { ensureStateDirectories, writeJson } from './state.js';
-import { getEnvkitLogger } from './logger.js';
+import path from 'node:path';
 
-export interface ProvisionOptions {
+import { LAST_APPLIED_FILE } from './constants.js';
+import { getEnvkitLogger } from './logger.js';
+import { ensureStateDirectories, writeJson } from './state.js';
+import type { EnvironmentSpec } from './types.js';
+
+export type ProvisionOptions = {
   cwd?: string;
 }
 

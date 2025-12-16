@@ -1,16 +1,16 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+import { NotFoundError, ValidationError } from '@kitiumai/error';
+import { isObject } from '@kitiumai/utils-ts';
 import { parse as parseYaml } from 'yaml';
-import { EnvironmentSpec } from './types.js';
-import { createEnvkitError } from './logger.js';
 
-// Type guard for object check
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import type { EnvironmentSpec } from './types.js';
 
-export interface LoadSpecOptions {
+const SOURCE = '@kitiumai/envkit';
+
+export type LoadSpecOptions = {
   cwd?: string;
 }
 
@@ -33,9 +33,13 @@ export async function loadSpec(
     return parsed;
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      throw createEnvkitError('spec_not_found', `Environment spec not found: ${fullPath}`, {
+      throw new NotFoundError({
+        code: 'envkit/spec_not_found',
+        message: `Environment spec not found: ${fullPath}`,
+        severity: 'error',
+        retryable: false,
+        source: SOURCE,
         cause: error,
-        context: { specPath, fullPath },
       });
     }
     throw error;
@@ -50,18 +54,34 @@ function parseContent(raw: string, specPath: string): EnvironmentSpec {
     }
     return parseYaml(raw) as EnvironmentSpec;
   } catch (error) {
-    throw createEnvkitError('spec_parse_error', `Failed to parse environment spec: ${specPath}`, {
+    throw new ValidationError({
+      code: 'envkit/spec_parse_error',
+      message: `Failed to parse environment spec: ${specPath}`,
+      severity: 'error',
+      retryable: false,
+      source: SOURCE,
       cause: error as Error,
-      context: { specPath, extension },
     });
   }
 }
 
 function validateSpec(spec: EnvironmentSpec): void {
   if (!isObject(spec)) {
-    throw createEnvkitError('spec_invalid', 'Environment spec must be an object.');
+    throw new ValidationError({
+      code: 'envkit/spec_invalid',
+      message: 'Environment spec must be an object.',
+      severity: 'error',
+      retryable: false,
+      source: SOURCE,
+    });
   }
   if (!spec.name || typeof spec.name !== 'string') {
-    throw createEnvkitError('spec_invalid', 'Environment spec requires a valid name string.');
+    throw new ValidationError({
+      code: 'envkit/spec_invalid',
+      message: 'Environment spec requires a valid name string.',
+      severity: 'error',
+      retryable: false,
+      source: SOURCE,
+    });
   }
 }

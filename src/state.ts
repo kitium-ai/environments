@@ -1,12 +1,13 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
 import { DIAGNOSTICS_DIR, STATE_DIR } from './constants.js';
 
-export async function ensureStateDirectories(baseDir = process.cwd()): Promise<void> {
-  const dirs = [STATE_DIR, DIAGNOSTICS_DIR];
+export async function ensureStateDirectories(baseDirectory = process.cwd()): Promise<void> {
+  const directories = [STATE_DIR, DIAGNOSTICS_DIR];
   await Promise.all(
-    dirs.map(async (relativePath) => {
-      const fullPath = path.join(baseDir, relativePath);
+    directories.map(async (relativePath) => {
+      const fullPath = path.join(baseDirectory, relativePath);
       await fs.mkdir(fullPath, { recursive: true });
     })
   );
