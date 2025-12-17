@@ -1,13 +1,13 @@
-import { getPresetConfig, initializeLogger } from '@kitiumai/logger';
-import { beforeAll } from 'vitest';
+import { getPresetConfig, initializeLogger } from "@kitiumai/logger";
+import { beforeAll } from "vitest";
 
 beforeAll(() => {
-  const config = getPresetConfig('development', {
+  const config = getPresetConfig("development", {
     loki: {
       enabled: false, // Disable Loki in tests
-      host: 'localhost',
+      host: "localhost",
       port: 3100,
-      protocol: 'http',
+      protocol: "http",
       batchSize: 100,
       interval: 5000,
       timeout: 10000,

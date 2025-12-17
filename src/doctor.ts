@@ -1,27 +1,34 @@
-import { exec } from 'node:child_process';
-import path from 'node:path';
-import { promisify } from 'node:util';
+import { exec } from "node:child_process";
+import path from "node:path";
+import { promisify } from "node:util";
 
-import { timeout } from '@kitiumai/utils-ts';
+import { timeout } from "@kitiumai/utils-ts";
 
-import { DOCTOR_REPORT_FILE } from './constants.js';
-import { getEnvkitLogger } from './logger.js';
-import { ensureStateDirectories, writeJson } from './state.js';
-import type { DoctorCheckResult, DoctorReport, EnvironmentSpec } from './types.js';
+import { DOCTOR_REPORT_FILE } from "./constants.js";
+import { getEnvkitLogger } from "./logger.js";
+import { ensureStateDirectories, writeJson } from "./state.js";
+import type {
+  DoctorCheckResult,
+  DoctorReport,
+  EnvironmentSpec,
+} from "./types.js";
 
 const execAsync = promisify(exec);
 
 export type DoctorOptions = {
   cwd?: string;
-}
+};
 
-async function executeDoctorCheck(command: string, cwd: string): Promise<DoctorCheckResult> {
+async function executeDoctorCheck(
+  command: string,
+  cwd: string,
+): Promise<DoctorCheckResult> {
   const startedAt = Date.now();
   try {
     const { stdout, stderr } = await timeout(
       execAsync(command, { cwd }),
       15000,
-      `Command execution timed out: ${command}`
+      `Command execution timed out: ${command}`,
     );
     return {
       command,
@@ -31,12 +38,16 @@ async function executeDoctorCheck(command: string, cwd: string): Promise<DoctorC
       durationMs: Date.now() - startedAt,
     };
   } catch (error) {
-    const execError = error as { stdout?: string; stderr?: string; message: string };
+    const execError = error as {
+      stdout?: string;
+      stderr?: string;
+      message: string;
+    };
     return {
       command,
       success: false,
-      stdout: (execError.stdout ?? '').toString().trim(),
-      stderr: (execError.stderr ?? execError.message ?? '').toString().trim(),
+      stdout: (execError.stdout ?? "").toString().trim(),
+      stderr: (execError.stderr ?? execError.message ?? "").toString().trim(),
       durationMs: Date.now() - startedAt,
     };
   }
@@ -44,10 +55,13 @@ async function executeDoctorCheck(command: string, cwd: string): Promise<DoctorC
 
 export async function runDoctor(
   spec: EnvironmentSpec,
-  options: DoctorOptions = {}
+  options: DoctorOptions = {},
 ): Promise<DoctorReport> {
   const cwd = options.cwd ?? process.cwd();
-  const logger = getEnvkitLogger({ component: 'doctor', environment: spec.name });
+  const logger = getEnvkitLogger({
+    component: "doctor",
+    environment: spec.name,
+  });
   await ensureStateDirectories(cwd);
 
   const results: DoctorCheckResult[] = [];
@@ -70,6 +84,9 @@ export async function runDoctor(
 
   const reportPath = path.join(cwd, DOCTOR_REPORT_FILE);
   await writeJson(reportPath, report);
-  logger.info('Doctor checks completed', { passed, failed: report.summary.failed });
+  logger.info("Doctor checks completed", {
+    passed,
+    failed: report.summary.failed,
+  });
   return report;
 }

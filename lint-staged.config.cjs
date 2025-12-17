@@ -1,1 +1,1 @@
-module.exports = require('@kitiumai/config/lint-staged.config.cjs');
+module.exports = require("@kitiumai/config/lint-staged.config.cjs");

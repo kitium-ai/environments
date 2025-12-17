@@ -1,4 +1,4 @@
-import type { PluginHook } from './types.js';
+import type { PluginHook } from "./types.js";
 
 export class PluginRegistry {
   private readonly hooks: Record<string, PluginHook[]> = {};
